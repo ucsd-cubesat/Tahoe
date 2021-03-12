@@ -1,54 +1,66 @@
 #include "MAXM8C.h"
+#include "NMEA.h"
 
-#define ASCII_A 65
-#define ASCII_0 48
+// The index to the end of the buffer
+#define BUFFER_END (sizeof(m_buffer) - 1)
 
-/**
- * Parses any upercase hex digits
- */
-uint8_t parseHexDigit(const char digit) {
-    if (digit < ASCII_A) {
-        return digit - ASCII_0;
-    }
-    else {
-        return 0x0A + digit - ASCII_A;
+// The current length of the buffer including the null-terminator, in bytes
+#define CURR_LENGTH (m_offset + 1)
+
+void MAXM8C::reset() {
+    m_offset = 0;
+    m_ready = false;
+    m_buffer[0] = 0;
+}
+
+void MAXM8C::update() {
+    while (Serial1.available()) {
+        char c = Serial1.read();
+        switch (c) {
+
+        case '\n':
+            break;
+
+        case '\r':
+            m_ready = nmea_verify_checksum(m_buffer);
+            break;
+
+        case '$':
+            reset();
+            break;
+
+        default:
+            if (m_offset < BUFFER_END) {
+                m_buffer[m_offset] = c;
+                m_offset++;
+                m_buffer[m_offset] = 0;
+            }
+            break;
+        }
+        // break immediately if sentence is ready
+        if (m_ready) {
+            break;
+        }
     }
 }
 
-/**
- * Finds and parses the checksum at the end of an nmea sentence. MUST BE NULL
- * TERMINATED
- */
-uint8_t parseChecksum(const char *checksum) {
-    const char highDigit = *checksum;
-    const char lowDigit = *(checksum + 1);
-    return (parseHexDigit(highDigit) << 4) | parseHexDigit(lowDigit);
+size_t MAXM8C::available() {
+    return m_ready ? m_offset : 0;
 }
 
-/**
- * Calculates the checksum of an NMEA sentence. MUST BE NULL TERMINATED
- */
-uint8_t calculateChecksum(const char *nmea) {
-    const char *p = nmea;
-    uint8_t checksum = 0;
-    while (*p != '*' && *p != '\0') {
-        checksum ^= *p;
+size_t MAXM8C::read(char *nmea, size_t len) {
+    if (!m_ready) {
+        return 0;
     }
-    return checksum;
-}
 
-uint8_t MAXM8C::readSentence(char *nmea, size_t len) {
-    while (Serial1.read() != '$');
+    // take the smaller of the sizes
+    if (len > CURR_LENGTH) {
+        len = CURR_LENGTH;
+    }
 
-    size_t numRead = Serial1.readBytesUntil('*', nmea, len);
-    nmea[numRead] = '\0';
+    // copy up to null
+    memcpy(nmea, m_buffer, len);
 
-    char checksum[3];
-    Serial1.readBytesUntil('\r', checksum, 3);
-    checksum[2] = 0;
-
-    uint8_t parsedChecksum = parseChecksum(checksum);
-    uint8_t calculatedChecksum = calculateChecksum(nmea);
-
-    return parsedChecksum == calculatedChecksum ? 0 : parsedChecksum;
+    reset();
+    return len;
 }

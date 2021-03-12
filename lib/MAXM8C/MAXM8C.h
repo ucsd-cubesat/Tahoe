@@ -10,17 +10,42 @@ public:
      * @brief Constructs the device driver.
      */
     MAXM8C() {
-        Serial1.begin(9600);
+        reset();
     };
 
     /**
-     * @brief Waits for the next complete NMEA sentence and reads it into the
-     *        buffer, null-terminating it and removing delimiters.
-     * @param nmea The character buffer that will contain the sentence
-     * @param len  The max capacity of the buffer, including space for a null
-     * @return 0 if the checksum passes, otherwise the supposed checksum
+     * @brief Processess the current stream of UART information. This is like
+     * loop() in  main.c.
      */
-    uint8_t readSentence(char *nmea, size_t len);
+    void update();
+
+    /**
+     * @brief The number of bytes in the current sentence
+     * @return The number of bytes in the current sentence, not including a
+     *         null-terminator; 0 if no sentence is available
+     */
+    size_t available();
+
+    /**
+     * @brief Reads the next available sentence. If no sentence is available,
+     *        the buffer is left intact
+     * @param nmea The character buffer that will contain the sentence
+     * @param len  The max capacity of the buffer, which should include space
+     *             for a null terminator
+     * @return The number of bytes stored into the buffer, including a
+     *         null-terminator; or 0 if no sentence is available
+     */
+    size_t read(char *nmea, size_t len);
+
+private:
+    char m_buffer[128];
+    size_t m_offset;
+    bool m_ready;
+
+    /**
+     * @brief Resets the state of the reader.
+     */
+    void reset();
 };
 
 #endif /* MAXM8C_H */
