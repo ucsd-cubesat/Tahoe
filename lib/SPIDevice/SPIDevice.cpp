@@ -4,7 +4,7 @@ void SPIDevice::exchange(uint8_t reg, void* buffer, size_t len) {
     digitalWrite(m_ss_pin, LOW);
     SPI.beginTransaction(m_settings);
 
-    SPI.transfer(reg & 0x7F);
+    SPI.transfer(reg);
     SPI.transfer(buffer, len);
 
     SPI.endTransaction();
@@ -14,11 +14,11 @@ void SPIDevice::exchange(uint8_t reg, void* buffer, size_t len) {
 void SPIDevice::write(uint8_t reg, void* buffer, size_t len) {
     uint8_t temp[len];
     memcpy(temp, buffer, len);
-    exchange(reg, temp, len);
+    exchange(reg & 0x7F, temp, len);
 }
 
 uint8_t SPIDevice::write(uint8_t reg, uint8_t value) {
-    exchange(reg, &value, 1);
+    exchange(reg & 0x7F, &value, 1);
     return value;
 }
 
@@ -45,7 +45,7 @@ void SPIDevice::exchangeAuto(uint8_t reg, void* buffer, size_t len) {
     for (size_t i = 0; i < len; i++) {
         digitalWrite(m_ss_pin, LOW);
 
-        SPI.transfer(reg & 0x7F);
+        SPI.transfer(reg);
         b[i] = SPI.transfer(b[i]);
         reg++;
 
