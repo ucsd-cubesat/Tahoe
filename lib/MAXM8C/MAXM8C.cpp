@@ -13,9 +13,9 @@ void MAXM8C::reset() {
     m_buffer[0] = 0;
 }
 
-void MAXM8C::update() {
-    while (Serial1.available()) {
-        char c = Serial1.read();
+void MAXM8C::update(Stream &uart) {
+    while (uart.available()) {
+        char c = uart.read();
         switch (c) {
 
         case '\n':

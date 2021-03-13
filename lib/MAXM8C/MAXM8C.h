@@ -15,9 +15,10 @@ public:
 
     /**
      * @brief Processess the current stream of UART information. This is like
-     * loop() in  main.c.
+     *        loop() in  main.c.
+     * @param srtc The source object providing data
      */
-    void update();
+    void update(Stream &src);
 
     /**
      * @brief The number of bytes in the current sentence
@@ -38,7 +39,7 @@ public:
     size_t read(char *nmea, size_t len);
 
 private:
-    char m_buffer[128];
+    char m_buffer[81];
     size_t m_offset;
     bool m_ready;
 
