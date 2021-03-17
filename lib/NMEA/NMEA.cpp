@@ -118,7 +118,7 @@ void nmea_parse_rmc(char *rmc, const char **utc, const char **status,
 }
 
 void nmea_parse_vtg(char *vtg, const char **deg, const char **mag,
-                    const char **knot, const char kmhr) {
+                    const char **knot, const char **kmhr) {
     nmea_get_next_field(vtg, nullptr);
     nmea_get_next_field(vtg, deg);
     nmea_get_next_field(vtg, nullptr);
