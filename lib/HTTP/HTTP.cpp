@@ -1,7 +1,7 @@
 #include "HTTP.h"
 
-void serverConnect(char HOST_NAME[], int HTTP_PORT, WiFiClient client) {
-  if(client.connect(HOST_NAME, HTTP_PORT)) {
+void serverConnect(IPAddress server , int HTTP_PORT, WiFiClient client) {
+  if(client.connect(server, HTTP_PORT)) {
     Serial.println("Connected to server");
   } else {
     Serial.println("connection failed");
@@ -17,10 +17,10 @@ Payload createPayload(int16_t x, int16_t y, int16_t z, float temp) {
     return payload;
 }
 
-void httpPost(Payload payload, String PATH_NAME, char HOST_NAME[], WiFiClient client) {
-  client.println("POST" + PATH_NAME + " HTTP/1.1");
-  client.println("Host: " + String(HOST_NAME));
-  client.println("Content-Length: 12"); // Should be sizeof payload
+void httpPost(String HTTP_METHOD, Payload payload, String PATH_NAME, char HOST_NAME[], WiFiClient client) {
+  client.println(HTTP_METHOD + PATH_NAME + " HTTP/1.1");
+  client.println("Host: 192.168.1.107");
+  client.println("Content-Length: 10"); // Should be sizeof payload
   client.println("Connection: close");
   client.println(); 
   client.write((uint8_t*) &payload, sizeof(payload));
@@ -29,7 +29,7 @@ void httpPost(Payload payload, String PATH_NAME, char HOST_NAME[], WiFiClient cl
   while(client.available()) {
     // read an incoming byte from the server and print them to serial monitor:
     char c = client.read();
-    Serial.print(c);
+    Serial.write(c);
     Serial.println();
   }
 

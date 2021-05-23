@@ -20,10 +20,12 @@ int16_t z; float z_float;
 
 //HTTP settings
 WiFiClient client;
-int    HTTP_PORT   = 80;
-String HTTP_METHOD = "POST "; 
-char   HOST_NAME[] = "tritoncubed.us-east-2.elasticbeanstalk.com"; 
-String PATH_NAME   = "/binary";
+int    HTTP_PORT   = 8080;
+String HTTP_METHOD = "GET ";
+//char   HOST_NAME[] = "tritoncubed.us-east-2.elasticbeanstalk.com";
+IPAddress server(192, 168, 1, 107); 
+char   HOST_NAME[] = "192.168.1.107";
+String PATH_NAME   = "/launchapi/ping";
 
 //Temperature Probe settings
 #define ONE_WIRE_BUS 2
@@ -38,9 +40,7 @@ void setup() {
   Serial.println(accelDevice.rebootXLG());
   accelDevice.enterXLOnlyMode(ODR_XL_238, FS_XL_4);
   setupDS18B20(insideThermometer, sensors); 
-  delay(2500);
-  serverConnect(HOST_NAME, HTTP_PORT, client);
-  delay(2500);
+  delay(2500); 
 }
 
 void loop() {
@@ -55,7 +55,28 @@ void loop() {
   delay(2500);
 
   Payload payload = createPayload(x, y, z, tempC);
-  httpPost(payload, PATH_NAME, HOST_NAME, client); 
+  /*serverConnect(server, HTTP_PORT, client);
+  delay(2500);
+  httpPost(HTTP_METHOD, payload, PATH_NAME, HOST_NAME, client);
+  delay(7500); */
+  if (client.connect(server, 8080)) {
+    client.println("POST /launchapi/binary HTTP/1.1");
+    client.println("Host: 192.168.1.107");
+    client.println("Content-Length: 10"); // Should be sizeof payload
+    client.println("Connection: close");
+    client.println();
+    client.write((uint8_t*) &payload, sizeof(payload));
+    Serial.println("Sent 8 bytes, response: ");
+
+    for (int i = 0; i < 5 && !client.available(); i++) {
+      delay(100);
+    }
+    while (client.available()) {
+      char c = client.read();
+      Serial.write(c);
+    }
+    Serial.println(); 
+  }
   delay(10000);
 }
 
