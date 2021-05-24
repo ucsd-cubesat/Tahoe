@@ -7,7 +7,9 @@
 
 
 
-
+/**
+ * @brief Uses changeable WiFi information in cpp file to connect to local wifi
+ */
 void beginWiFiConnect();
 
 #endif

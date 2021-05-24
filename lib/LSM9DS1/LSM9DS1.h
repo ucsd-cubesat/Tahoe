@@ -305,6 +305,7 @@ public:
      */
     SPIDevice returnXL();
 
+
 private:
     SPIDevice m_accel_gyro;
     SPIDevice m_magneto;
