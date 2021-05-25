@@ -16,7 +16,6 @@ typedef struct {
     int16_t mag_y;
     int16_t mag_z;
     float temp_C;
-    
 } Payload;
 
 /**

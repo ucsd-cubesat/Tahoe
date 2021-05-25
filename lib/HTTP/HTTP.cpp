@@ -23,7 +23,7 @@ void httpPost(IPAddress server , int HTTP_PORT, String HTTP_METHOD, Payload payl
 
       client.println(HTTP_METHOD + PATH_NAME + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
-      client.println("Content-Length: " + String(sizeof(payload))); // Should be sizeof payload
+      client.println("Content-Length: " + String(sizeof(payload)));
       client.println("Connection: close");
       client.println(); 
       client.write((uint8_t*) &payload, sizeof(payload));
