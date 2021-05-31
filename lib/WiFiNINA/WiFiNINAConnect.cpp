@@ -1,7 +1,7 @@
 #include "WiFiNINAConnect.h"
 
-char ssid[] = "Foreal24";
-char pass[] = "DIBS888824";
+char ssid[] = "Madrigal";
+char pass[] = "6c75696769";
 int status = WL_IDLE_STATUS;
 
 void printMacAddress(byte mac[]) {

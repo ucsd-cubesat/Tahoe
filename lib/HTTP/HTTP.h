@@ -16,13 +16,17 @@ typedef struct {
     int16_t mag_y;
     int16_t mag_z;
     float temp_C;
+    char lat[12];
+    char lat_ns;
+    char lon[12];
+    char lon_ew;
 } Payload;
 
 /**
  * @brief Function that returns a new payload with all the parameters set to sensor readings
  */
 Payload createPayload(int16_t x, int16_t y, int16_t z, int16_t x_g, int16_t y_g, int16_t z_g, 
-  int16_t x_m, int16_t y_m, int16_t z_m, float temp);
+  int16_t x_m, int16_t y_m, int16_t z_m, float temp, const char* lat, char lat_ns, const char* lon, char lon_ew);
 
 /**
  * @brief Creates an HTTP request that sends the payload to designated url

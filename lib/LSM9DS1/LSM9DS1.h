@@ -299,6 +299,32 @@ public:
      */
     void readMagnetosensor(float &x, float &y, float &z);
 
+
+
+    /**
+     * @brief Scales a raw Accelerometer reading to proper units of m/s^2
+     * @param raw The raw axis reading
+     * @param scale The appropriate scaling factor
+     * @return The scaled value
+     */
+    static float convertRaw(int16_t raw, FS_XL scale);
+
+    /**
+     * @brief Scales a raw Gyroscope reading to proper units of deg/s
+     * @param raw The raw axis reading
+     * @param scale The appropriate scaling factor
+     * @return The scaled value
+     */
+    static float convertRaw(int16_t raw, FS_G scale);
+
+    /**
+     * @brief Scales a raw Magnetosensor reading to proper units of guass
+     * @param raw The raw axis reading
+     * @param scale The appropriate scaling factor
+     * @return The scaled value
+     */
+    static float convertRaw(int16_t raw, FS_M scale);
+
 private:
     SPIDevice m_accel_gyro;
     SPIDevice m_magneto;

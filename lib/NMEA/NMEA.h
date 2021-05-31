@@ -121,9 +121,9 @@ enum GPS_QUALITY: char {
  *        may be null
  * @param gga The GGA-type sentence, which will be modified
  * @param utc     UTC time of position, as hhmmss.ss
- * @param lat     Latitude, as llll.ll
+ * @param lat     Latitude, as ddmm.mm (DMS)
  * @param lat_ns  Latitude direction, 'N' for north or 'S' for south
- * @param lon     Longitude, as yyyyy.yy
+ * @param lon     Longitude, as dddmm.mm (DMS)
  * @param lon_ew  Longitude direction, 'E' for east or 'W' for west
  * @param quality Quality indicator, see GPS_QUALITY
  * @param num     Number of sattelites in use, ranging [0, 12]

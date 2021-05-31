@@ -124,3 +124,23 @@ void LSM9DS1::readMagnetosensor(float &x, float &y, float &z) {
     y = y_raw * resolution / 1000;
     z = z_raw * resolution / 1000;
 }
+
+float LSM9DS1::convertRaw(int16_t raw, FS_XL scale) {
+    float resolution = scale == FS_XL_2 ? 0.061f :
+                       scale == FS_XL_4 ? 0.122f :
+                       scale == FS_XL_8 ? 0.244f : 0.732;
+    return raw * resolution * 9.80665f / 1000;
+}
+
+float LSM9DS1::convertRaw(int16_t raw, FS_G scale) {
+    float resolution = scale == FS_G_245 ? 8.75f :
+                       scale == FS_G_500 ? 17.5f : 70.0f;
+    return raw * resolution / 1000;
+}
+
+float LSM9DS1::convertRaw(int16_t raw, FS_M scale) {
+    float resolution = scale == FS_M_4  ? 0.14f :
+                       scale == FS_M_8  ? 0.29f :
+                       scale == FS_M_12 ? 0.43f : 0.58f;
+    return raw * resolution / 1000;
+}
