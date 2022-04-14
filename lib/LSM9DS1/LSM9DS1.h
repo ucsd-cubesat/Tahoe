@@ -189,9 +189,9 @@ public:
      *                   subchip
      * @param mag_ss_pin The CS/SS pin of the magnetosensor subchip
      */
-    LSM9DS1(uint32_t clock, pin_size_t xlg_ss_pin, pin_size_t mag_ss_pin) :
-        m_accel_gyro(SPISettings(clock, BitOrder::MSBFIRST, 0), xlg_ss_pin),
-        m_magneto(SPISettings(clock, BitOrder::MSBFIRST, 0), mag_ss_pin) {
+    LSM9DS1(uint32_t clock, uint16_t xlg_ss_pin, uint16_t mag_ss_pin) :
+        m_accel_gyro(SPISettings(clock, MSBFIRST, SPI_MODE0), xlg_ss_pin),
+        m_magneto(SPISettings(clock, MSBFIRST, SPI_MODE0), mag_ss_pin) {
         pinMode(xlg_ss_pin, OUTPUT);
         digitalWrite(xlg_ss_pin, HIGH);
         pinMode(mag_ss_pin, OUTPUT);
