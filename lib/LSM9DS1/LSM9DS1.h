@@ -179,6 +179,99 @@ enum OPER_M: uint8_t {
     OPER_M_CONT   = 0b00
 };
 
+enum INT_XL_CONFIG: uint8_t {
+
+  // Z-axis high event
+  ZHIE_XL = 0b00100000,
+
+  // Z-axis low event
+  ZLIE_XL = 0b00010000,
+  
+  // Y-axis high event
+  YHIE_XL = 0b00001000,
+
+  // Y-axis low event
+  YLIE_XL = 0b00000100,
+
+  // X-axis high event
+  XHIE_XL = 0b00000010,
+
+  // X-axis low event
+  XLIE_XL = 0b00000001,
+
+  // All high Events
+  XYZHIE_XL = ZHIE_XL | YHIE_XL | XHIE_XL, 
+
+  // All low events
+  XYZLIE_XL = ZLIE_XL | YLIE_XL | XLIE_XL,
+
+  // All events - 6Direction enabled
+  XYZ_ALL_IE_XL = 0b01000000
+  
+};
+
+enum XL_AXIS { AXIS_X, AXIS_Y, AXIS_Z };
+
+// Only Int1 responds to the interrupt generator; both have data-ready
+// interrupt functionality
+enum INT_PIN { INT1, INT2 };
+
+// Configuration options for BOTH pins - select wisely!
+enum INT_PIN_CONFIG: uint8_t {
+
+  // *** Interrupt pin 1 ***
+
+  // Gyroscope interrupt
+  INT1_IG_G = (1 << 7),
+
+  // Accelerometer interrupt
+  INT_IG_XL = (1 << 6),
+
+  //FSS5 interrupt
+  INT_FSS5 = (1 << 5),
+
+  //Overrun interrupt
+  INT_OVR = (1 << 4),
+
+  // FIFO threshold interrupt
+  INT_FTH = (1 << 3),
+
+  // Boot status available
+  INT_Boot = (1 << 2),
+
+  // Gyroscope Data ready
+  INT_DRDY_G = (1 << 1),
+
+  // Accelerometer Data ready
+  INT_DRDY_XL = 1,
+
+
+  // *** Interrupt pin 2 ***
+
+  // Inactivity interrupt
+  INT2_IG_G = (1 << 7),
+
+  //FSS5 interrupt
+  INT2_FSS5 = (1 << 5),
+
+  //Overrun interrupt
+  INT2_OVR = (1 << 4),
+
+  // FIFO threshold interrupt
+  INT2_FTH = (1 << 3),
+
+  // Boot status available
+  INT2_DRDY_TEMP = (1 << 2),
+
+  // Gyroscope Data ready
+  INT2_DRDY_G = (1 << 1),
+
+  // Accelerometer Data ready
+  INT2_DRDY_XL = 1
+};
+
+
+
 class LSM9DS1 {
 public:
 
@@ -280,6 +373,12 @@ public:
      */
     void readGyroscope(float &x, float &y, float &z);
 
+    /**
+     * @brief Changes the sleep / wake status of the gyroscope
+     * @param wake true (default) wakes the gyroscope, false puts the gyroscope
+     *       into a sleep state
+     */
+    void setGyroActivity(bool wake=true);
 
 
     /**
@@ -299,6 +398,39 @@ public:
      */
     void readMagnetosensor(float &x, float &y, float &z);
 
+
+    /**
+     * @brief Configures the accel interrupt generator register
+     * @param config the interrupt configuration (when to interrupt)
+     * @param andInterrupt whether the interrupt is an AND or OR interrupt, applicable
+     *        to configurations that interrupt on multiple criteria only
+     * @param duration the interrupt duration; the number of samples that the interrupt
+     *        will stay triggered (this is dependent on the selected ODR i.e. if duration = ODR
+     *        the interrupt will stay triggered for 1 second)
+     */
+    void configXLInterrupt(INT_XL_CONFIG config, bool andInterrupt, uint8_t duration = 0);
+
+    /**
+     * @brief Sets up the accel interrupt threshold for a single axis
+     * @param axis the axis to set up
+     * @param threshold the interrupt threshold - raw accelerometer value
+     */
+    void setXLaxisInterruptTHT(XL_AXIS axis, uint8_t threshold);
+
+    /**
+     * @brief Sets up the accel interrupt threshold for all axis
+     * @param threshold the interrupt threshold - raw accelerometer value
+     */
+    void setAllXLInterruptTHT(uint8_t threshold);
+
+    /**
+     * @brief Configure an interrupt pin on interrupt criteria and trigger status
+     * @param pin the pin to configure - INT1 or INT2
+     * @param config the configuration - all wanted interrupts OR'd together
+     * @param activeHigh whether the interrupt pin is active high or low (default: high)
+     * @param pushPull whether the interrupt pin is push-pull or open-drain (default: push-pull)
+     */
+    void configIntPin(INT_PIN pin, uint8_t config, bool activeHigh=true, bool pushPull=true);
 
 
     /**

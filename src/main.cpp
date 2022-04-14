@@ -57,8 +57,9 @@ int16_t z_m; float z_m_f;
 // char LINEBUFF[100];
 // char *utc, *lat, *lat_ns, *lon, *lon_ew;
 
+void configureXLInterrupts(LSM9DS1* accelDevice);
+
 void setup() {
-  Serial.begin(9600);
   SPI.begin();
   Serial1.begin(9600);
   // beginWiFiConnect();
@@ -66,7 +67,9 @@ void setup() {
   accelDevice.enterXLGMode(ODR_G_952, FS_G_2000, FS_XL_4);
   Serial.println(accelDevice.rebootMag());
   accelDevice.configureMag(OPER_M_CONT, ODR_M_40, POWER_M_MED, FS_M_8);
-  Serial.println("finished setup");
+
+  configureXLInterrupts(&accelDevice);
+
   // setupDS18B20(insideThermometer, sensors);
 }
 
@@ -90,7 +93,7 @@ void loop() {
   z_float = LSM9DS1::convertRaw(z, FS_XL_4);
   //accelDevice.readAccelerometer(x_float, y_float, z_float);
   //Outputs normalized values to Serial monitor
-  // Serial.print("Acceleration(m/s^2): " + String(x_float) + " " + String(y_float) + " " + String(z_float));
+  Serial.print("Acceleration(m/s^2): " + String(x_float) + " " + String(y_float) + " " + String(z_float));
   Serial.println();
 
   //Requests values of angular velocity and outputs to Serial monitor
@@ -108,7 +111,7 @@ void loop() {
   y_m_f = LSM9DS1::convertRaw(y_m, FS_M_8);
   z_m_f = LSM9DS1::convertRaw(z_m, FS_M_8);
   //accelDevice.readMagnetosensor(x_m_f, y_m_f, z_m_f);
-  // Serial.print("Induction(gausses): " + String(x_m_f) + " " + String(y_m_f) + " " + String(z_m_f));
+  Serial.print("Induction(gausses): " + String(x_m_f) + " " + String(y_m_f) + " " + String(z_m_f));
   Serial.println();
 
   // //Requests temperature in Celcius
@@ -118,4 +121,22 @@ void loop() {
   // //Prepares a payload object to send through an HTTP request
   // Payload payload = createPayload(x, y, z, x_g, y_g, z_g, x_m, y_m, z_m, tempC, lat, *lat_ns, lon, *lon_ew);
   // httpPost(server, HTTP_PORT, HTTP_METHOD, payload, PATH_NAME, HOST_NAME, client);
+}
+
+
+void configureXLInterrupts(LSM9DS1* accelDevice) {
+
+  // XYZHIE_XL: Interrupt on all high events on all axis
+  // false: OR interrupts
+  // duration: trigger for the duration of 5 samples (for ODR = 952 Hz, this is ~ 5ms)
+  accelDevice->configXLInterrupt(XYZHIE_XL, false, 5);
+
+  // set threshold to 20; raw accelerometer reading in mg/LBS
+  accelDevice->setAllXLInterruptTHT(20);
+
+  // set interrupt 1 to report gyroscope and accelerometer triggers
+  // OR combines the gyroscope and accelerometer triggers
+  // method defaults to active high and push-pull functionality
+  accelDevice->configIntPin(INT1, INT_IG_XL | INT1_IG_G);
+
 }

@@ -9,6 +9,15 @@
 #define REG_CTRL_REG1_G 0x10
 #define REG_CTRL_REG6_XL 0x20
 #define REG_CTRL_REG8 0x22
+#define REG_CTRL_REG9 0x23
+
+#define INT_GET_CFG_XL 0x06
+#define INT_GEN_THS_X_XL 0x07
+#define INT_GEN_THS_Y_XL 0x08
+#define INT_GEN_THS_Z_XL 0x09
+#define INT_GEN_DUR_XL 0x0A
+#define INT1_CTRL 0x0C
+#define INT2_CTRL 0x0D
 
 #define START_OUT_G  0x18
 #define START_OUT_XL 0x28

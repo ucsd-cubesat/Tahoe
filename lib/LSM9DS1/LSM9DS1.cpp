@@ -105,6 +105,18 @@ void LSM9DS1::readGyroscope(float &x, float &y, float &z) {
 }
 
 
+void LSM9DS1::setGyroActivity(bool wake) {
+  uint8_t config = m_accel_gyro.read(REG_CTRL_REG9);
+  if (wake) {
+    // set the sleep bit off
+    config |= ~(1 << 6);
+  } else {
+    config |= (1 << 6);
+  }
+  m_accel_gyro.write(REG_CTRL_REG1_G, config);
+}
+
+
 
 void LSM9DS1::readMagnetosensor(int16_t &x, int16_t &y, int16_t &z) {
     uint8_t buff[6];
@@ -124,6 +136,65 @@ void LSM9DS1::readMagnetosensor(float &x, float &y, float &z) {
     y = y_raw * resolution / 1000;
     z = z_raw * resolution / 1000;
 }
+
+void LSM9DS1::configXLInterrupt(INT_XL_CONFIG intConfig, bool andInterrupt, uint8_t duration) {
+
+  uint8_t config = intConfig;
+  if (andInterrupt) {
+    config |= (1 << 8);
+  }
+  m_accel_gyro.write(INT_GET_CFG_XL, config);
+
+  // Configure the duration
+  config = 0;
+
+  if (duration != 0) {
+    config |= (duration & 0b01111111);
+    // configure wait bit
+    config |= (1 << 7);
+  }
+
+  m_accel_gyro.write(INT_GEN_DUR_XL, config);
+}
+
+void LSM9DS1::setXLaxisInterruptTHT(XL_AXIS axis, uint8_t threshold) {
+  uint8_t axisRegister = 0;
+
+  switch (axis) {
+    case AXIS_X: axisRegister = INT_GEN_THS_X_XL; break;
+    case AXIS_Y: axisRegister = INT_GEN_THS_Y_XL; break;
+    case AXIS_Z: axisRegister = INT_GEN_THS_Z_XL; break;
+  }
+
+  m_accel_gyro.write(axisRegister, threshold);
+}
+
+void LSM9DS1::setAllXLInterruptTHT(uint8_t threshold) {
+  setXLaxisInterruptTHT(AXIS_X, threshold);
+  setXLaxisInterruptTHT(AXIS_Y, threshold);
+  setXLaxisInterruptTHT(AXIS_Z, threshold);
+}
+
+void LSM9DS1::configIntPin(INT_PIN pin, uint8_t config, bool activeHigh, bool pushPull) {
+
+  switch (pin) {
+    case INT1: m_accel_gyro.write(INT1_CTRL, config);
+    case INT2: m_accel_gyro.write(INT2_CTRL, config);
+  }
+
+  // Active high / low and push-pull / open-drain settings are configured in CTRL_REG8
+  config = 0;
+  if (!activeHigh) {
+    config |= (1 << 5);
+  }
+
+  if (!pushPull) {
+    config |= (1 << 4);
+  }
+
+  m_accel_gyro.write(REG_CTRL_REG8, config);
+}
+
 
 float LSM9DS1::convertRaw(int16_t raw, FS_XL scale) {
     float resolution = scale == FS_XL_2 ? 0.061f :
