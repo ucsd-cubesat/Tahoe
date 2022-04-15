@@ -12,7 +12,7 @@ public:
      * @param settings The settings for use on the bus
      * @param ss_pin   The CS/SS pin for the device 
      */
-    SPIDevice(SPISettings settings, pin_size_t ss_pin) :
+    SPIDevice(SPISettings settings, uint16_t ss_pin) :
         m_settings(settings),
         m_ss_pin(ss_pin) {
         pinMode(m_ss_pin, OUTPUT);
@@ -91,7 +91,7 @@ public:
 
 private:
     SPISettings m_settings;
-    pin_size_t m_ss_pin;
+    uint16_t m_ss_pin;
 };
 
 #endif /* SPIDEVICE_H */

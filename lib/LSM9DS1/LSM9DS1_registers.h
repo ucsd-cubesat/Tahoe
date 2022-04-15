@@ -9,9 +9,31 @@
 #define REG_CTRL_REG1_G 0x10
 #define REG_CTRL_REG6_XL 0x20
 #define REG_CTRL_REG8 0x22
+#define REG_CTRL_REG9 0x23
 
 #define START_OUT_G  0x18
 #define START_OUT_XL 0x28
+
+// * Interrupt registers *
+
+// Accelerometer
+#define INT_GEN_CFG_XL 0x06
+#define INT_GEN_THS_X_XL 0x07
+#define INT_GEN_THS_Y_XL 0x08
+#define INT_GEN_THS_Z_XL 0x09
+#define INT_GEN_DUR_XL 0x0A
+#define INT1_CTRL 0x0C
+#define INT2_CTRL 0x0D
+
+// Gyroscope
+#define INT_GEN_CFG_G 0x30
+#define INT_GEN_THS_XH_G 0x31
+#define INT_GEN_THS_XL_G 0x32
+#define INT_GEN_THS_YH_G 0x33
+#define INT_GEN_THS_YL_G 0x34
+#define INT_GEN_THS_ZH_G 0x35
+#define INT_GEN_THS_ZL_G 0x36
+#define INT_GEN_DUR_G 0x37
 
 typedef union {
     struct {
@@ -42,6 +64,13 @@ typedef union {
 #define REG_CTRL_REG4_M 0x23
 
 #define START_OUT_M  0x28
+
+// * Interrupt Registers *
+
+#define INT_CFG_M 0x30
+#define INT_SRC_M 0x31
+#define INT_THS_L_M 0x32
+#define INT_THS_H_M 0x33
 
 typedef union {
     struct {

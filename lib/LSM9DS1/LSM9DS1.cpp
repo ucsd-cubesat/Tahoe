@@ -1,6 +1,11 @@
 #include "LSM9DS1.h"
 #include "LSM9DS1_registers.h"
 
+bool LSM9DS1::XLGisAvailable() {
+  uint8_t whoami = m_accel_gyro.read(REG_WHO_AM_I);
+  return whoami == 0x68;
+}
+
 uint8_t LSM9DS1::rebootXLG() {
     m_accel_gyro.write(REG_CTRL_REG8, 0x05);
     delay(10);
@@ -105,6 +110,18 @@ void LSM9DS1::readGyroscope(float &x, float &y, float &z) {
 }
 
 
+void LSM9DS1::setGyroActivity(bool wake) {
+  uint8_t config = m_accel_gyro.read(REG_CTRL_REG9);
+  if (wake) {
+    // set the sleep bit off
+    config |= ~(1 << 6);
+  } else {
+    config |= (1 << 6);
+  }
+  m_accel_gyro.write(REG_CTRL_REG1_G, config);
+}
+
+
 
 void LSM9DS1::readMagnetosensor(int16_t &x, int16_t &y, int16_t &z) {
     uint8_t buff[6];
@@ -124,6 +141,154 @@ void LSM9DS1::readMagnetosensor(float &x, float &y, float &z) {
     y = y_raw * resolution / 1000;
     z = z_raw * resolution / 1000;
 }
+
+void LSM9DS1::configXLInterrupt(INT_XL_CONFIG intConfig, bool andInterrupt, uint8_t duration) {
+
+  uint8_t config = intConfig;
+  if (andInterrupt) {
+    config |= (1 << 7);
+  }
+  m_accel_gyro.write(INT_GEN_CFG_XL, config);
+
+  // Configure the duration
+  config = 0;
+
+  if (duration != 0) {
+    config |= (duration & 0b01111111);
+    // configure wait bit
+    config |= (1 << 7);
+  }
+
+  m_accel_gyro.write(INT_GEN_DUR_XL, config);
+}
+
+void LSM9DS1::setXLaxisInterruptTHS(AXIS axis, uint8_t threshold) {
+  uint8_t axisRegister = 0;
+
+  switch (axis) {
+    case AXIS_X: axisRegister = INT_GEN_THS_X_XL; break;
+    case AXIS_Y: axisRegister = INT_GEN_THS_Y_XL; break;
+    case AXIS_Z: axisRegister = INT_GEN_THS_Z_XL; break;
+  }
+
+  m_accel_gyro.write(axisRegister, threshold);
+}
+
+void LSM9DS1::setAllXLInterruptTHS(uint8_t threshold) {
+  setXLaxisInterruptTHS(AXIS_X, threshold);
+  setXLaxisInterruptTHS(AXIS_Y, threshold);
+  setXLaxisInterruptTHS(AXIS_Z, threshold);
+}
+
+void LSM9DS1::configGInterrupt(INT_G_CONFIG intConfig, bool andInterrupt, bool latching, uint8_t duration) {
+
+  uint8_t config = intConfig;
+  if (andInterrupt) {
+    config |= (1 << 7);
+  }
+  if (latching) {
+    config |= (1 << 6);
+  }
+
+  m_accel_gyro.write(INT_GEN_CFG_G, config);
+
+  // Configure the duration
+  config = 0;
+
+  if (duration != 0) {
+    config |= (duration & 0b01111111);
+    // configure wait bit
+    config |= (1 << 7);
+  }
+
+  m_accel_gyro.write(INT_GEN_DUR_G, config);
+}
+
+void LSM9DS1::setGInterruptTHS(AXIS axis, uint16_t threshold, bool resetCounter) {
+
+  uint8_t axisRegisterH = 0;
+  uint8_t axisRegisterL = 0;
+
+  switch (axis) {
+    case AXIS_X: axisRegisterH = INT_GEN_THS_XH_G; axisRegisterL = INT_GEN_THS_XL_G; break;
+    case AXIS_Y: axisRegisterH = INT_GEN_THS_YH_G; axisRegisterL = INT_GEN_THS_YL_G; break;
+    case AXIS_Z: axisRegisterH = INT_GEN_THS_ZH_G; axisRegisterL = INT_GEN_THS_ZL_G; break;
+  }
+
+  uint8_t highByte = (threshold >> 8) & 0b01111111;
+  uint8_t lowByte = threshold & 0b11111111;
+
+  if (!resetCounter) {
+    // Instead of resetting the counter, opt to decrement the counter
+    highByte |= (1 << 7);
+  }
+
+  m_accel_gyro.write(axisRegisterH, highByte);
+  m_accel_gyro.write(axisRegisterL, lowByte);
+}
+
+
+void LSM9DS1::setAllGInterruptTHS(uint16_t threshold, bool resetCounter) {
+  setGInterruptTHS(AXIS_X, threshold, resetCounter);
+  setGInterruptTHS(AXIS_Y, threshold, resetCounter);
+  setGInterruptTHS(AXIS_Z, threshold, resetCounter);
+}
+
+
+void LSM9DS1::configXLGIntPin(INT_PIN pin, uint8_t config, bool pushPull, bool activeHigh) {
+
+  switch (pin) {
+    case INT1: m_accel_gyro.write(INT1_CTRL, config);
+    case INT2: m_accel_gyro.write(INT2_CTRL, config);
+  }
+
+  // Active high / low and push-pull / open-drain settings are configured in CTRL_REG8
+  config = 0;
+  if (!activeHigh) {
+    config |= (1 << 5);
+  }
+
+  if (!pushPull) {
+    config |= (1 << 4);
+  }
+
+  m_accel_gyro.write(REG_CTRL_REG8, config);
+}
+
+void LSM9DS1::configMagInterrupt(INT_MAG_CONFIG intConfig, bool latch, bool activeHigh) {
+
+  uint8_t config = intConfig;
+
+  // Enable interrupt functionality
+  config |= (1);
+
+  // For some reason the datsheet spec is opposite;
+  // if the latch bit is 1, then it latches, else not
+  if (latch) {
+    config |= (1 << 1);
+  }
+
+  if (activeHigh) {
+    config |= (1 << 2);
+  }
+
+  m_magneto.write(INT_CFG_M, config);
+}
+
+void LSM9DS1::configMagTHS(uint16_t threshold) {
+
+  uint8_t highByte = (threshold >> 8) & 0b01111111;
+  uint8_t lowByte = threshold & 0b11111111;
+
+  m_magneto.write(INT_THS_H_M, highByte);
+  m_magneto.write(INT_THS_L_M, lowByte);
+}
+
+
+void LSM9DS1::unlatchMagInt() {
+  uint8_t settings = m_magneto.read(INT_SRC_M);
+}
+
 
 float LSM9DS1::convertRaw(int16_t raw, FS_XL scale) {
     float resolution = scale == FS_XL_2 ? 0.061f :
