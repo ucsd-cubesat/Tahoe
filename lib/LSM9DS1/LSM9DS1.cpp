@@ -142,7 +142,7 @@ void LSM9DS1::readMagnetosensor(float &x, float &y, float &z) {
     z = z_raw * resolution / 1000;
 }
 
-void LSM9DS1::configXLInterrupt(uint8_t intConfig, bool andInterrupt, uint8_t duration) {
+void LSM9DS1::configXLInterrupt(INT_XL_CONFIG intConfig, bool andInterrupt, uint8_t duration) {
 
   uint8_t config = intConfig;
   if (andInterrupt) {
@@ -162,7 +162,7 @@ void LSM9DS1::configXLInterrupt(uint8_t intConfig, bool andInterrupt, uint8_t du
   m_accel_gyro.write(INT_GEN_DUR_XL, config);
 }
 
-void LSM9DS1::setXLaxisInterruptTHT(XL_AXIS axis, uint8_t threshold) {
+void LSM9DS1::setXLaxisInterruptTHT(AXIS axis, uint8_t threshold) {
   uint8_t axisRegister = 0;
 
   switch (axis) {
@@ -180,7 +180,62 @@ void LSM9DS1::setAllXLInterruptTHT(uint8_t threshold) {
   setXLaxisInterruptTHT(AXIS_Z, threshold);
 }
 
-void LSM9DS1::configIntPin(INT_PIN pin, uint8_t config, bool activeHigh, bool pushPull) {
+void LSM9DS1::configGInterrupt(INT_G_CONFIG intConfig, bool andInterrupt, bool latching, uint8_t duration) {
+
+  uint8_t config = intConfig;
+  if (andInterrupt) {
+    config |= (1 << 7);
+  }
+  if (latching) {
+    config |= (1 << 6);
+  }
+
+  m_accel_gyro.write(INT_GEN_CFG_G, config);
+
+  // Configure the duration
+  config = 0;
+
+  if (duration != 0) {
+    config |= (duration & 0b01111111);
+    // configure wait bit
+    config |= (1 << 7);
+  }
+
+  m_accel_gyro.write(INT_GEN_DUR_G, config);
+}
+
+void LSM9DS1::setGInterruptTHT(AXIS axis, uint16_t threshold, bool resetCounter) {
+
+  uint8_t axisRegisterH = 0;
+  uint8_t axisRegisterL = 0;
+
+  switch (axis) {
+    case AXIS_X: axisRegisterH = INT_GEN_THS_XH_G; axisRegisterL = INT_GEN_THS_XL_G; break;
+    case AXIS_Y: axisRegisterH = INT_GEN_THS_YH_G; axisRegisterL = INT_GEN_THS_YL_G; break;
+    case AXIS_Z: axisRegisterH = INT_GEN_THS_ZH_G; axisRegisterL = INT_GEN_THS_ZL_G; break;
+  }
+
+  uint8_t highByte = (threshold >> 8) & 0b01111111;
+  uint8_t lowByte = threshold & 0b11111111;
+
+  if (!resetCounter) {
+    // Instead of resetting the counter, opt to decrement the counter
+    highByte |= (1 << 7);
+  }
+
+  m_accel_gyro.write(axisRegisterH, highByte);
+  m_accel_gyro.write(axisRegisterL, lowByte);
+}
+
+
+void LSM9DS1::setAllGInterruptTHT(uint16_t threshold, bool resetCounter) {
+  setGInterruptTHT(AXIS_X, threshold, resetCounter);
+  setGInterruptTHT(AXIS_Y, threshold, resetCounter);
+  setGInterruptTHT(AXIS_Z, threshold, resetCounter);
+}
+
+
+void LSM9DS1::configXLGIntPin(INT_PIN pin, uint8_t config, bool activeHigh, bool pushPull) {
 
   switch (pin) {
     case INT1: m_accel_gyro.write(INT1_CTRL, config);

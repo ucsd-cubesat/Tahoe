@@ -147,17 +147,36 @@ void loop() {
 
 void configureXLInterrupts(LSM9DS1* accelDevice) {
 
+  // *** Demonstration purposes only ***
+  // Current setup (below) should trigger an interrupt on INT1 for
+  // accelerometer and gyroscope high events on all axis
+
+
+  // Interrupt on the accelerometer
+
   // XYZHIE_XL: Interrupt on all high events on all axis
   // false: OR interrupts
   // duration: trigger for the duration of 5 samples (for ODR = 952 Hz, this is ~ 5ms)
-  accelDevice->configXLInterrupt(ZHIE_XL, false, 5);
+  accelDevice->configXLInterrupt(XYZHIE_XL, false, 5);
 
   // set threshold to 200; 128 * 200 = raw accelerometer reading
   accelDevice->setAllXLInterruptTHT(200);
+   
+  // Interrupt on the gyroscope
 
-  // set interrupt 1 to report gyroscope and accelerometer triggers
+  // XYZHIE_G: Interrupt on all high events on all axis
+  // false: OR interrupts
+  // duration: trigger for the duration of 5 samples (for ODR = 952 Hz, this is ~ 5ms)
+  accelDevice->configGInterrupt(XYZHIE_G, false, false, 5);
+
+  // Set the threshold to 4000; raw gyroscope reading
+  accelDevice->setAllGInterruptTHT(4000);
+
+  // set the interrupt 1 pin (INT1) to report gyroscope and accelerometer triggers
   // OR combines the gyroscope and accelerometer triggers
   // method defaults to active high and push-pull functionality
-  accelDevice->configIntPin(INT1, INT_IG_XL);
+  accelDevice->configXLGIntPin(INT1, INT1_IG_XL | INT1_IG_G);
+  // the interrupt pins can be configured for much more; see the INT_PIN_CONFIG enum
+
 
 }

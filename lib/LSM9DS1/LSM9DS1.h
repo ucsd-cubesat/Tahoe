@@ -180,7 +180,7 @@ enum OPER_M: uint8_t {
 };
 
 /**
- * @brief Determines the interrupt trigger event
+ * @brief Determines the accelerometer interrupt trigger event
  */
 enum INT_XL_CONFIG: uint8_t {
 
@@ -213,10 +213,46 @@ enum INT_XL_CONFIG: uint8_t {
   
 };
 
+
 /**
- * @brief Determines accelerometer axis to modify
+ * @brief Determines the gyroscope interrupt trigger event
  */
-enum XL_AXIS { AXIS_X, AXIS_Y, AXIS_Z };
+enum INT_G_CONFIG: uint8_t {
+
+  // Z-axis (YAW) high event
+  ZHIE_G = 0b00100000,
+
+  // Z-axis (YAW) low event
+  ZLIE_G = 0b00010000,
+  
+  // Y-axis (ROLL) high event
+  YHIE_G = 0b00001000,
+
+  // Y-axis (ROLL) low event
+  YLIE_G = 0b00000100,
+
+  // X-axis (PITCH) high event
+  XHIE_G = 0b00000010,
+
+  // X-axis (PITCH) low event
+  XLIE_G = 0b00000001,
+
+  // All high Events
+  XYZHIE_G = ZHIE_G | YHIE_G | XHIE_G,
+
+  // All low events
+  XYZLIE_G = ZLIE_G | YLIE_G | XLIE_G,
+
+  // All events
+  XYZ_ALL_IE_G = 0b00111111
+
+};
+
+
+/**
+ * @brief Determines axis to modify
+ */
+enum AXIS { AXIS_X, AXIS_Y, AXIS_Z };
 
 // Only Int1 responds to the interrupt generator; both have data-ready
 // interrupt functionality
@@ -233,25 +269,25 @@ enum INT_PIN_CONFIG: uint8_t {
   INT1_IG_G = (1 << 7),
 
   // Accelerometer interrupt
-  INT_IG_XL = (1 << 6),
+  INT1_IG_XL = (1 << 6),
 
   //FSS5 interrupt
-  INT_FSS5 = (1 << 5),
+  INT1_FSS5 = (1 << 5),
 
   //Overrun interrupt
-  INT_OVR = (1 << 4),
+  INT1_OVR = (1 << 4),
 
   // FIFO threshold interrupt
-  INT_FTH = (1 << 3),
+  INT1_FTH = (1 << 3),
 
   // Boot status available
-  INT_Boot = (1 << 2),
+  INT1_Boot = (1 << 2),
 
   // Gyroscope Data ready
-  INT_DRDY_G = (1 << 1),
+  INT1_DRDY_G = (1 << 1),
 
   // Accelerometer Data ready
-  INT_DRDY_XL = 1,
+  INT1_DRDY_XL = 1,
 
 
   // *** Interrupt pin 2 ***
@@ -421,14 +457,14 @@ public:
      *        will stay triggered (this is dependent on the selected ODR i.e. if duration = ODR
      *        the interrupt will stay triggered for 1 second)
      */
-    void configXLInterrupt(uint8_t config, bool andInterrupt, uint8_t duration = 0);
+    void configXLInterrupt(INT_XL_CONFIG config, bool andInterrupt, uint8_t duration = 0);
 
     /**
      * @brief Sets up the accel interrupt threshold for a single axis
-     * @param axis the axis to set up
+     * @param axis the axis to configure
      * @param threshold the interrupt threshold - raw accelerometer value
      */
-    void setXLaxisInterruptTHT(XL_AXIS axis, uint8_t threshold);
+    void setXLaxisInterruptTHT(AXIS axis, uint8_t threshold);
 
     /**
      * @brief Sets up the accel interrupt threshold for all axis
@@ -437,13 +473,41 @@ public:
     void setAllXLInterruptTHT(uint8_t threshold);
 
     /**
+     * @brief Configures the gyro interrupt generator register
+     * @param config the interrupt configuration (when to interrupt)
+     * @param andInterrupt whether the interrupt is an AND or OR interrupt, applicable
+     *        to configurations that interrupt on multiple criteria only
+     * @param latchingInterrupt whether the interrupt is latching
+     * @param duration the interrupt duration; the number of samples that the interrupt
+     *        will stay triggered (this is dependent on the selected ODR i.e. if duration = ODR
+     *        the interrupt will stay triggered for 1 second)
+     */
+    void configGInterrupt(INT_G_CONFIG intConfig, bool andInterrupt, bool latching, uint8_t duration = 0);
+
+    /**
+     * @brief Configures the gyro interrupt generator register
+     * @param axis the axis to configure
+     * @param threshold the interrupt threshold - raw gyroscope value
+     * @param resetCounter whether to reset the counter after an interrupt (defaults to true)
+     */
+    void setGInterruptTHT(AXIS axis, uint16_t threshold, bool resetCounter = true);
+
+    /**
+     * @brief Sets up the gyroscope interrupt threshold for all axis
+     * @param threshold the interrupt threshold - raw accelerometer value
+     * @param resetCounter whether to reset the counter after an interrupt (defaults to true)
+     */
+    void setAllGInterruptTHT(uint16_t threshold, bool resetCounter = true);
+
+    /**
      * @brief Configure an interrupt pin on interrupt criteria and trigger status
      * @param pin the pin to configure - INT1 or INT2
      * @param config the configuration - all wanted interrupts OR'd together
      * @param activeHigh whether all interrupt pins are active high or low (default: high)
      * @param pushPull whether all interrupt pins are push-pull or open-drain (default: push-pull)
      */
-    void configIntPin(INT_PIN pin, uint8_t config, bool activeHigh=true, bool pushPull=true);
+    void configXLGIntPin(INT_PIN pin, uint8_t config, bool activeHigh=true, bool pushPull=true);
+
 
 
     /**
