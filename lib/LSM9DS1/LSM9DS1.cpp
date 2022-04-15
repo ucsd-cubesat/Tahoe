@@ -162,7 +162,7 @@ void LSM9DS1::configXLInterrupt(INT_XL_CONFIG intConfig, bool andInterrupt, uint
   m_accel_gyro.write(INT_GEN_DUR_XL, config);
 }
 
-void LSM9DS1::setXLaxisInterruptTHT(AXIS axis, uint8_t threshold) {
+void LSM9DS1::setXLaxisInterruptTHS(AXIS axis, uint8_t threshold) {
   uint8_t axisRegister = 0;
 
   switch (axis) {
@@ -174,10 +174,10 @@ void LSM9DS1::setXLaxisInterruptTHT(AXIS axis, uint8_t threshold) {
   m_accel_gyro.write(axisRegister, threshold);
 }
 
-void LSM9DS1::setAllXLInterruptTHT(uint8_t threshold) {
-  setXLaxisInterruptTHT(AXIS_X, threshold);
-  setXLaxisInterruptTHT(AXIS_Y, threshold);
-  setXLaxisInterruptTHT(AXIS_Z, threshold);
+void LSM9DS1::setAllXLInterruptTHS(uint8_t threshold) {
+  setXLaxisInterruptTHS(AXIS_X, threshold);
+  setXLaxisInterruptTHS(AXIS_Y, threshold);
+  setXLaxisInterruptTHS(AXIS_Z, threshold);
 }
 
 void LSM9DS1::configGInterrupt(INT_G_CONFIG intConfig, bool andInterrupt, bool latching, uint8_t duration) {
@@ -204,7 +204,7 @@ void LSM9DS1::configGInterrupt(INT_G_CONFIG intConfig, bool andInterrupt, bool l
   m_accel_gyro.write(INT_GEN_DUR_G, config);
 }
 
-void LSM9DS1::setGInterruptTHT(AXIS axis, uint16_t threshold, bool resetCounter) {
+void LSM9DS1::setGInterruptTHS(AXIS axis, uint16_t threshold, bool resetCounter) {
 
   uint8_t axisRegisterH = 0;
   uint8_t axisRegisterL = 0;
@@ -228,14 +228,14 @@ void LSM9DS1::setGInterruptTHT(AXIS axis, uint16_t threshold, bool resetCounter)
 }
 
 
-void LSM9DS1::setAllGInterruptTHT(uint16_t threshold, bool resetCounter) {
-  setGInterruptTHT(AXIS_X, threshold, resetCounter);
-  setGInterruptTHT(AXIS_Y, threshold, resetCounter);
-  setGInterruptTHT(AXIS_Z, threshold, resetCounter);
+void LSM9DS1::setAllGInterruptTHS(uint16_t threshold, bool resetCounter) {
+  setGInterruptTHS(AXIS_X, threshold, resetCounter);
+  setGInterruptTHS(AXIS_Y, threshold, resetCounter);
+  setGInterruptTHS(AXIS_Z, threshold, resetCounter);
 }
 
 
-void LSM9DS1::configXLGIntPin(INT_PIN pin, uint8_t config, bool activeHigh, bool pushPull) {
+void LSM9DS1::configXLGIntPin(INT_PIN pin, uint8_t config, bool pushPull, bool activeHigh) {
 
   switch (pin) {
     case INT1: m_accel_gyro.write(INT1_CTRL, config);
@@ -253,6 +253,40 @@ void LSM9DS1::configXLGIntPin(INT_PIN pin, uint8_t config, bool activeHigh, bool
   }
 
   m_accel_gyro.write(REG_CTRL_REG8, config);
+}
+
+void LSM9DS1::configMagInterrupt(INT_MAG_CONFIG intConfig, bool latch, bool activeHigh) {
+
+  uint8_t config = intConfig;
+
+  // Enable interrupt functionality
+  config |= (1);
+
+  // For some reason the datsheet spec is opposite;
+  // if the latch bit is 1, then it latches, else not
+  if (latch) {
+    config |= (1 << 1);
+  }
+
+  if (activeHigh) {
+    config |= (1 << 2);
+  }
+
+  m_magneto.write(INT_CFG_M, config);
+}
+
+void LSM9DS1::configMagTHS(uint16_t threshold) {
+
+  uint8_t highByte = (threshold >> 8) & 0b01111111;
+  uint8_t lowByte = threshold & 0b11111111;
+
+  m_magneto.write(INT_THS_H_M, highByte);
+  m_magneto.write(INT_THS_L_M, lowByte);
+}
+
+
+void LSM9DS1::unlatchMagInt() {
+  uint8_t settings = m_magneto.read(INT_SRC_M);
 }
 
 

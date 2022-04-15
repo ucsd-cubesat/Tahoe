@@ -75,6 +75,7 @@ void setup() {
 
   configureXLInterrupts(&accelDevice);
   pinMode(20, INPUT);
+  pinMode(21, INPUT);
 
   if (!accelDevice.XLGisAvailable()) {
     Serial.println("setup failed");
@@ -90,10 +91,14 @@ void setup() {
 void loop() {
 
   if (digitalRead(20)) {
-    Serial.println("ahhhhhhhhh!!!!!");
+    Serial.println("Gryo or accel reading!");
     delay(100);
   }
 
+  if (digitalRead(21)) {
+    Serial.println("Mag reading!");
+    delay(100);
+  }
 
   // while (1) {
   //   gps.update(Serial1);
@@ -160,7 +165,7 @@ void configureXLInterrupts(LSM9DS1* accelDevice) {
   accelDevice->configXLInterrupt(XYZHIE_XL, false, 5);
 
   // set threshold to 200; 128 * 200 = raw accelerometer reading
-  accelDevice->setAllXLInterruptTHT(200);
+  accelDevice->setAllXLInterruptTHS(200);
    
   // Interrupt on the gyroscope
 
@@ -170,7 +175,7 @@ void configureXLInterrupts(LSM9DS1* accelDevice) {
   accelDevice->configGInterrupt(XYZHIE_G, false, false, 5);
 
   // Set the threshold to 4000; raw gyroscope reading
-  accelDevice->setAllGInterruptTHT(4000);
+  accelDevice->setAllGInterruptTHS(4000);
 
   // set the interrupt 1 pin (INT1) to report gyroscope and accelerometer triggers
   // OR combines the gyroscope and accelerometer triggers
@@ -178,5 +183,15 @@ void configureXLInterrupts(LSM9DS1* accelDevice) {
   accelDevice->configXLGIntPin(INT1, INT1_IG_XL | INT1_IG_G);
   // the interrupt pins can be configured for much more; see the INT_PIN_CONFIG enum
 
+
+  // Interrupt on the magnetometer (INTM)
+
+  // XYZIEN: Event on all axis
+  // false: no latch
+  // true: active High
+  accelDevice->configMagInterrupt(XYZIEN, false, true);
+
+  // Mag Interrupt threshold: 1000 (raw mag reading)
+  accelDevice->configMagTHS(10000);
 
 }

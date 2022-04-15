@@ -65,6 +65,13 @@ typedef union {
 
 #define START_OUT_M  0x28
 
+// * Interrupt Registers *
+
+#define INT_CFG_M 0x30
+#define INT_SRC_M 0x31
+#define INT_THS_L_M 0x32
+#define INT_THS_H_M 0x33
+
 typedef union {
     struct {
         uint8_t st        : 1;

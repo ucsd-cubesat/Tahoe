@@ -250,13 +250,35 @@ enum INT_G_CONFIG: uint8_t {
 
 
 /**
+ * @brief Determines magnetometer interrupt trigger event (on INTM)
+ */
+enum INT_MAG_CONFIG: uint8_t {
+
+  // X-axis
+  XIEN = 0b10000000,
+
+  // Y-axis
+  YIEN = 0b01000000,
+
+  // X-axis
+  ZIEN = 0b00100000,
+
+  // All axis
+  XYZIEN = XIEN | YIEN | ZIEN
+
+};
+
+
+/**
  * @brief Determines axis to modify
  */
 enum AXIS { AXIS_X, AXIS_Y, AXIS_Z };
 
+
 // Only Int1 responds to the interrupt generator; both have data-ready
 // interrupt functionality
 enum INT_PIN { INT1, INT2 };
+
 
 /**
  * @brief Interrupt pin trigger conditions; includes conditions for both pins!
@@ -464,17 +486,17 @@ public:
      * @param axis the axis to configure
      * @param threshold the interrupt threshold - raw accelerometer value
      */
-    void setXLaxisInterruptTHT(AXIS axis, uint8_t threshold);
+    void setXLaxisInterruptTHS(AXIS axis, uint8_t threshold);
 
     /**
      * @brief Sets up the accel interrupt threshold for all axis
      * @param threshold the interrupt threshold - raw accelerometer value
      */
-    void setAllXLInterruptTHT(uint8_t threshold);
+    void setAllXLInterruptTHS(uint8_t threshold);
 
     /**
      * @brief Configures the gyro interrupt generator register
-     * @param config the interrupt configuration (when to interrupt)
+     * @param intConfig the interrupt configuration (when to interrupt)
      * @param andInterrupt whether the interrupt is an AND or OR interrupt, applicable
      *        to configurations that interrupt on multiple criteria only
      * @param latchingInterrupt whether the interrupt is latching
@@ -490,14 +512,14 @@ public:
      * @param threshold the interrupt threshold - raw gyroscope value
      * @param resetCounter whether to reset the counter after an interrupt (defaults to true)
      */
-    void setGInterruptTHT(AXIS axis, uint16_t threshold, bool resetCounter = true);
+    void setGInterruptTHS(AXIS axis, uint16_t threshold, bool resetCounter = true);
 
     /**
      * @brief Sets up the gyroscope interrupt threshold for all axis
      * @param threshold the interrupt threshold - raw accelerometer value
      * @param resetCounter whether to reset the counter after an interrupt (defaults to true)
      */
-    void setAllGInterruptTHT(uint16_t threshold, bool resetCounter = true);
+    void setAllGInterruptTHS(uint16_t threshold, bool resetCounter = true);
 
     /**
      * @brief Configure an interrupt pin on interrupt criteria and trigger status
@@ -506,9 +528,26 @@ public:
      * @param activeHigh whether all interrupt pins are active high or low (default: high)
      * @param pushPull whether all interrupt pins are push-pull or open-drain (default: push-pull)
      */
-    void configXLGIntPin(INT_PIN pin, uint8_t config, bool activeHigh=true, bool pushPull=true);
+    void configXLGIntPin(INT_PIN pin, uint8_t config, bool pushPull=true, bool activeHigh=true);
 
+    /**
+     * @brief Configures the magnetometer interrupt generator register
+     * @param intConfig the interrupt configuration (when to interrupt)
+     * @param latch whether the interrupt is latching
+     * @param activeHigh whether the interrupt on the INTM pin will be active high (defaults to high)
+     */
+    void configMagInterrupt(INT_MAG_CONFIG intConfig, bool latch, bool activeHigh=true);
 
+    /**
+     * @brief Sets up the gyroscope interrupt threshold for all axis
+     * @param threshold the interrupt threshold - raw magnetometer value
+     */
+    void configMagTHS(uint16_t threshold);
+
+    /**
+     * @brief Unlatches latched magnetometer interrupts
+     */
+    void unlatchMagInt();
 
     /**
      * @brief Scales a raw Accelerometer reading to proper units of m/s^2
