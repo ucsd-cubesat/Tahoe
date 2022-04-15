@@ -11,7 +11,7 @@
 #define REG_CTRL_REG8 0x22
 #define REG_CTRL_REG9 0x23
 
-#define INT_GET_CFG_XL 0x06
+#define INT_GEN_CFG_XL 0x06
 #define INT_GEN_THS_X_XL 0x07
 #define INT_GEN_THS_Y_XL 0x08
 #define INT_GEN_THS_Z_XL 0x09

@@ -179,6 +179,9 @@ enum OPER_M: uint8_t {
     OPER_M_CONT   = 0b00
 };
 
+/**
+ * @brief Determines the interrupt trigger event
+ */
 enum INT_XL_CONFIG: uint8_t {
 
   // Z-axis high event
@@ -210,13 +213,18 @@ enum INT_XL_CONFIG: uint8_t {
   
 };
 
+/**
+ * @brief Determines accelerometer axis to modify
+ */
 enum XL_AXIS { AXIS_X, AXIS_Y, AXIS_Z };
 
 // Only Int1 responds to the interrupt generator; both have data-ready
 // interrupt functionality
 enum INT_PIN { INT1, INT2 };
 
-// Configuration options for BOTH pins - select wisely!
+/**
+ * @brief Interrupt pin trigger conditions; includes conditions for both pins!
+ */
 enum INT_PIN_CONFIG: uint8_t {
 
   // *** Interrupt pin 1 ***
@@ -249,7 +257,7 @@ enum INT_PIN_CONFIG: uint8_t {
   // *** Interrupt pin 2 ***
 
   // Inactivity interrupt
-  INT2_IG_G = (1 << 7),
+  INT2_INACT = (1 << 7),
 
   //FSS5 interrupt
   INT2_FSS5 = (1 << 5),
@@ -290,6 +298,11 @@ public:
         pinMode(mag_ss_pin, OUTPUT);
         digitalWrite(mag_ss_pin, HIGH);
     }
+
+    /**
+     * @brief Returns whether the accelerometer / gyroscope subchip is online
+     */
+    bool XLGisAvailable();
 
     /**
      * @brief Reboots the dual accel+gyro subchip
@@ -408,7 +421,7 @@ public:
      *        will stay triggered (this is dependent on the selected ODR i.e. if duration = ODR
      *        the interrupt will stay triggered for 1 second)
      */
-    void configXLInterrupt(INT_XL_CONFIG config, bool andInterrupt, uint8_t duration = 0);
+    void configXLInterrupt(uint8_t config, bool andInterrupt, uint8_t duration = 0);
 
     /**
      * @brief Sets up the accel interrupt threshold for a single axis
@@ -427,8 +440,8 @@ public:
      * @brief Configure an interrupt pin on interrupt criteria and trigger status
      * @param pin the pin to configure - INT1 or INT2
      * @param config the configuration - all wanted interrupts OR'd together
-     * @param activeHigh whether the interrupt pin is active high or low (default: high)
-     * @param pushPull whether the interrupt pin is push-pull or open-drain (default: push-pull)
+     * @param activeHigh whether all interrupt pins are active high or low (default: high)
+     * @param pushPull whether all interrupt pins are push-pull or open-drain (default: push-pull)
      */
     void configIntPin(INT_PIN pin, uint8_t config, bool activeHigh=true, bool pushPull=true);
 

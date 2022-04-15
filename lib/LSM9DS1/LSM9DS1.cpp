@@ -1,6 +1,11 @@
 #include "LSM9DS1.h"
 #include "LSM9DS1_registers.h"
 
+bool LSM9DS1::XLGisAvailable() {
+  uint8_t whoami = m_accel_gyro.read(REG_WHO_AM_I);
+  return whoami == 0x68;
+}
+
 uint8_t LSM9DS1::rebootXLG() {
     m_accel_gyro.write(REG_CTRL_REG8, 0x05);
     delay(10);
@@ -137,13 +142,13 @@ void LSM9DS1::readMagnetosensor(float &x, float &y, float &z) {
     z = z_raw * resolution / 1000;
 }
 
-void LSM9DS1::configXLInterrupt(INT_XL_CONFIG intConfig, bool andInterrupt, uint8_t duration) {
+void LSM9DS1::configXLInterrupt(uint8_t intConfig, bool andInterrupt, uint8_t duration) {
 
   uint8_t config = intConfig;
   if (andInterrupt) {
-    config |= (1 << 8);
+    config |= (1 << 7);
   }
-  m_accel_gyro.write(INT_GET_CFG_XL, config);
+  m_accel_gyro.write(INT_GEN_CFG_XL, config);
 
   // Configure the duration
   config = 0;
